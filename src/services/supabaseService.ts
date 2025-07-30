@@ -1,4 +1,4 @@
-import { supabase, edgeFunctionName } from '../lib/supabase'
+import { supabase, edgeFunctionName, isSupabaseConfigured } from '../lib/supabase'
 
 export interface ProfileData {
   [key: string]: any
@@ -24,6 +24,15 @@ export interface EdgeFunctionResponse {
 export const uploadProfilesToDatabase = async (
   profiles: ProfileData[]
 ): Promise<DatabaseUploadResult> => {
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured() || !supabase) {
+    return {
+      success: false,
+      message: 'Database not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.',
+      error: 'Missing Supabase configuration',
+    }
+  }
+
   try {
     // Call the Supabase edge function to process and insert profiles
     const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
@@ -74,6 +83,11 @@ export const uploadProfilesToDatabase = async (
 }
 
 export const testDatabaseConnection = async (): Promise<boolean> => {
+  if (!isSupabaseConfigured() || !supabase) {
+    console.warn('Supabase not configured for connection test')
+    return false
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke('health-check', {
       body: { test: true },

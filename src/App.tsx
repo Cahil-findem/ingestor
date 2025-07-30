@@ -5,7 +5,7 @@ import { LoadingSpinner } from './components/LoadingSpinner'
 import { formatFileSize, simulateProcessing } from './utils/fileUtils'
 import { processJsonData } from './utils/jsonProcessor'
 import { validateJsonFile } from './utils/jsonValidator'
-import { uploadProfilesToDatabase } from './services/supabaseService'
+import { uploadProfilesToDatabase } from './services/supabaseService'\nimport { isSupabaseConfigured } from './lib/supabase'
 import { FileInfo, ProcessedData, ResultType } from './types'
 import './App.css'
 
