@@ -24,6 +24,7 @@
   "homepage": "https://github.com/George-T-Henry/ingestor#readme",
   "description": "",
   "dependencies": {
+    "@supabase/supabase-js": "^2.53.0",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.7.0",

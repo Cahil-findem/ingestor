@@ -151,6 +151,12 @@ h1 {
   color: #721c24;
 }
 
+.result.warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
 .result h3 {
   margin-bottom: 10px;
 }
@@ -170,4 +176,59 @@ h1 {
 
 .json-preview pre {
   margin: 0;
+}
+
+/* Database Status Styles */
+.database-status {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.database-status h4 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.database-status p.success {
+  color: #155724;
+  font-weight: 500;
+}
+
+.database-status p.error {
+  color: #721c24;
+  font-weight: 500;
+}
+
+.upload-errors {
+  margin-top: 10px;
+}
+
+.upload-errors summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #856404;
+}
+
+.upload-errors ul {
+  margin: 10px 0 0 20px;
+  padding: 0;
+}
+
+.upload-errors li {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+/* Processing Details */
+.processing-details {
+  margin-top: 15px;
+}
+
+.processing-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 10px;
 }

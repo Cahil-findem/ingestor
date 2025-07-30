@@ -4,6 +4,7 @@ export interface ProcessedData {
   dataTypes: Record<string, string>
   processedAt: string
   summary: string
+  databaseResult?: DatabaseUploadResult
 }
 
 export interface FileInfo {
@@ -11,4 +12,17 @@ export interface FileInfo {
   size: string
 }
 
-export type ResultType = 'success' | 'error'
+export interface DatabaseUploadResult {
+  success: boolean
+  message: string
+  data?: {
+    insertedCount: number
+    errors: Array<{
+      profile: any
+      error: string
+    }>
+  }
+  error?: string
+}
+
+export type ResultType = 'success' | 'error' | 'warning'

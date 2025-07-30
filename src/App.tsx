@@ -5,6 +5,7 @@ import { LoadingSpinner } from './components/LoadingSpinner'
 import { formatFileSize, simulateProcessing } from './utils/fileUtils'
 import { processJsonData } from './utils/jsonProcessor'
 import { validateJsonFile } from './utils/jsonValidator'
+import { uploadProfilesToDatabase } from './services/supabaseService'
 import { FileInfo, ProcessedData, ResultType } from './types'
 import './App.css'
 
@@ -71,12 +72,34 @@ function App() {
       const jsonData = validation.data!
       await simulateProcessing()
 
+      // Process the JSON data locally
       const processedData = processJsonData(jsonData)
 
+      // Upload to database via edge function
+      const databaseResult = await uploadProfilesToDatabase(jsonData)
+      processedData.databaseResult = databaseResult
+
+      // Determine result type based on database operation
+      let resultType: ResultType = 'success'
+      let title = 'Processing Complete!'
+      let message = `Successfully processed ${jsonData.length} profile${jsonData.length === 1 ? '' : 's'}.`
+
+      if (!databaseResult.success) {
+        resultType = 'error'
+        title = 'Database Upload Failed'
+        message = `Processed ${jsonData.length} profile${jsonData.length === 1 ? '' : 's'} locally, but failed to upload to database: ${databaseResult.message}`
+      } else if (databaseResult.data?.errors && databaseResult.data.errors.length > 0) {
+        resultType = 'warning'
+        title = 'Partial Upload Success'
+        message = `Processed ${jsonData.length} profile${jsonData.length === 1 ? '' : 's'}. ${databaseResult.data.insertedCount} uploaded successfully, ${databaseResult.data.errors.length} failed.`
+      } else {
+        message += ` All profiles uploaded to database successfully.`
+      }
+
       setResult({
-        type: 'success',
-        title: 'Processing Complete!',
-        message: `Successfully processed JSON array with ${jsonData.length} profile${jsonData.length === 1 ? '' : 's'}.`,
+        type: resultType,
+        title,
+        message,
         data: processedData,
         isVisible: true,
       })
@@ -96,7 +119,7 @@ function App() {
   return (
     <div className="container">
       <h1>JSON Processor</h1>
-      <p className="subtitle">Upload a JSON array with up to 10 profile objects</p>
+      <p className="subtitle">Upload a JSON array with up to 10 profile objects to the database</p>
 
       <FileUpload
         onFileSelect={handleFileSelect}
