@@ -2,8 +2,9 @@ import { useState, useCallback } from 'react'
 import { FileUpload } from './components/FileUpload'
 import { ProcessingResult } from './components/ProcessingResult'
 import { LoadingSpinner } from './components/LoadingSpinner'
-import { formatFileSize, readFileAsText, simulateProcessing } from './utils/fileUtils'
+import { formatFileSize, simulateProcessing } from './utils/fileUtils'
 import { processJsonData } from './utils/jsonProcessor'
+import { validateJsonFile } from './utils/jsonValidator'
 import { FileInfo, ProcessedData, ResultType } from './types'
 import './App.css'
 
@@ -26,14 +27,20 @@ function App() {
     isVisible: false,
   })
 
-  const handleFileSelect = useCallback((file: File) => {
-    if (!file.name.toLowerCase().endsWith('.json')) {
+  const handleFileSelect = useCallback(async (file: File) => {
+    setIsProcessing(true)
+    setResult({ ...result, isVisible: false })
+
+    const validation = await validateJsonFile(file)
+    
+    if (!validation.isValid) {
       setResult({
         type: 'error',
-        title: 'Invalid File Type',
-        message: 'Please select a JSON file (.json extension).',
+        title: 'Validation Failed',
+        message: validation.error!,
         isVisible: true,
       })
+      setIsProcessing(false)
       return
     }
 
@@ -43,7 +50,7 @@ function App() {
       size: formatFileSize(file.size),
     })
     setIsProcessButtonEnabled(true)
-    setResult({ ...result, isVisible: false })
+    setIsProcessing(false)
   }, [result])
 
   const handleProcessFile = useCallback(async () => {
@@ -54,15 +61,14 @@ function App() {
     setResult({ ...result, isVisible: false })
 
     try {
-      const fileContent = await readFileAsText(selectedFile)
-
-      let jsonData: any
-      try {
-        jsonData = JSON.parse(fileContent)
-      } catch (parseError) {
-        throw new Error('Invalid JSON format: ' + (parseError as Error).message)
+      // Re-validate the file (in case it was modified)
+      const validation = await validateJsonFile(selectedFile)
+      
+      if (!validation.isValid) {
+        throw new Error(validation.error!)
       }
 
+      const jsonData = validation.data!
       await simulateProcessing()
 
       const processedData = processJsonData(jsonData)
@@ -70,7 +76,7 @@ function App() {
       setResult({
         type: 'success',
         title: 'Processing Complete!',
-        message: `Successfully processed JSON file with ${Object.keys(jsonData).length} top-level properties.`,
+        message: `Successfully processed JSON array with ${jsonData.length} profile${jsonData.length === 1 ? '' : 's'}.`,
         data: processedData,
         isVisible: true,
       })
@@ -90,7 +96,7 @@ function App() {
   return (
     <div className="container">
       <h1>JSON Processor</h1>
-      <p className="subtitle">Upload a JSON file and process it instantly</p>
+      <p className="subtitle">Upload a JSON array with up to 10 profile objects</p>
 
       <FileUpload
         onFileSelect={handleFileSelect}
