@@ -132,8 +132,20 @@ function App() {
 
   return (
     <div className="container">
-      <h1>JSON Processor</h1>
-      <p className="subtitle">Upload a JSON array with up to 10 profile objects to the database</p>
+      <div className="header">
+        <div>
+          <h1>JSON Processor</h1>
+          <p className="subtitle">Upload a JSON array with up to 10 profile objects to the database</p>
+        </div>
+        <a 
+          href="https://smb-search.vercel.app/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="search-link"
+        >
+          Go to Search →
+        </a>
+      </div>
 
       <FileUpload
         onFileSelect={handleFileSelect}
