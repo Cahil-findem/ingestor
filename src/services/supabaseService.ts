@@ -42,11 +42,9 @@ export const uploadProfilesToDatabase = async (
     })
 
     // Call the Supabase edge function to process and insert profiles
+    // Note: The edge function expects a direct array of profiles, not wrapped in an object
     const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
-      body: {
-        profiles,
-        timestamp: new Date().toISOString(),
-      },
+      body: profiles, // Send profiles directly as array
     })
 
     if (error) {
@@ -70,25 +68,24 @@ export const uploadProfilesToDatabase = async (
       }
     }
 
-    const response = data as EdgeFunctionResponse
+    const response = data as any
 
-    if (!response.success) {
+    if (!response || !response.success) {
       return {
         success: false,
-        message: response.message || 'Database operation failed',
-        error: response.message,
-        data: response.errors,
+        message: response?.error || 'Database operation failed',
+        error: response?.error || 'Unknown error',
       }
     }
 
     return {
       success: true,
-      message: `Successfully uploaded ${response.insertedCount} profile${
-        response.insertedCount === 1 ? '' : 's'
+      message: `Successfully uploaded ${response.inserted} profile${
+        response.inserted === 1 ? '' : 's'
       } to database`,
       data: {
-        insertedCount: response.insertedCount,
-        errors: response.errors || [],
+        insertedCount: response.inserted,
+        errors: [],
       },
     }
   } catch (error) {
@@ -148,7 +145,7 @@ export const diagnosticTest = async (): Promise<{
     console.log('Testing configured edge function:', edgeFunctionName)
     
     const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
-      body: { test: true, profiles: [] },
+      body: [], // Send empty array for test
     })
 
     diagnostics.tests.configuredFunction = {
@@ -180,7 +177,7 @@ export const diagnosticTest = async (): Promise<{
   for (const testName of commonNames) {
     try {
       const { error } = await supabase.functions.invoke(testName, {
-        body: { test: true },
+        body: [],
       })
       
       diagnostics.tests[`common_${testName}`] = {
@@ -207,11 +204,7 @@ export const diagnosticTest = async (): Promise<{
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        test: true,
-        profiles: [],
-        timestamp: new Date().toISOString()
-      })
+      body: JSON.stringify([])
     })
     
     const responseText = await response.text()
