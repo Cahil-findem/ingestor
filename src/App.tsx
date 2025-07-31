@@ -5,7 +5,8 @@ import { LoadingSpinner } from './components/LoadingSpinner'
 import { formatFileSize, simulateProcessing } from './utils/fileUtils'
 import { processJsonData } from './utils/jsonProcessor'
 import { validateJsonFile } from './utils/jsonValidator'
-import { uploadProfilesToDatabase } from './services/supabaseService'
+import { uploadProfilesToDatabase, testEdgeFunction } from './services/supabaseService'
+import { isSupabaseConfigured } from './lib/supabase'
 import { FileInfo, ProcessedData, ResultType } from './types'
 import './App.css'
 
@@ -116,6 +117,19 @@ function App() {
     }
   }, [selectedFile, result])
 
+  const handleTestEdgeFunction = useCallback(async () => {
+    setIsProcessing(true)
+    const testResult = await testEdgeFunction()
+    setResult({
+      type: testResult.success ? 'success' : 'error',
+      title: testResult.success ? 'Edge Function Test Passed' : 'Edge Function Test Failed',
+      message: testResult.message,
+      data: testResult.details ? { summary: JSON.stringify(testResult.details, null, 2) } as any : undefined,
+      isVisible: true,
+    })
+    setIsProcessing(false)
+  }, [])
+
   return (
     <div className="container">
       <h1>JSON Processor</h1>
@@ -133,6 +147,17 @@ function App() {
       >
         Process File
       </button>
+
+      {isSupabaseConfigured() && (
+        <button
+          className="process-btn"
+          onClick={handleTestEdgeFunction}
+          disabled={isProcessing}
+          style={{ marginTop: '10px', background: '#6c757d' }}
+        >
+          Test Edge Function
+        </button>
+      )}
 
       <LoadingSpinner isVisible={isProcessing} />
 
