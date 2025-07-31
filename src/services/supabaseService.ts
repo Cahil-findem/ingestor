@@ -54,7 +54,9 @@ export const uploadProfilesToDatabase = async (
         errorMessage: error.message,
         errorCode: error.code,
         errorDetails: error.details,
-        context: error.context
+        context: error.context,
+        profilesSent: profiles.length,
+        firstProfile: profiles[0] // Log first profile for debugging
       })
       
       return {
@@ -63,12 +65,20 @@ export const uploadProfilesToDatabase = async (
         error: `Edge function error: ${JSON.stringify({
           message: error.message,
           code: error.code,
-          details: error.details
+          details: error.details,
+          profileCount: profiles.length
         })}`,
       }
     }
 
     const response = data as any
+    
+    console.log('Edge function response:', {
+      response,
+      success: response?.success,
+      inserted: response?.inserted,
+      error: response?.error
+    })
 
     if (!response || !response.success) {
       return {
