@@ -26,6 +26,6 @@ export const supabase = (() => {
   }
 })()
 
-export const edgeFunctionName = import.meta.env.VITE_SUPABASE_EDGE_FUNCTION_NAME || 'data_ingress'
+export const edgeFunctionName = import.meta.env.VITE_SUPABASE_EDGE_FUNCTION_NAME || 'data-ingress'
 
 export const isSupabaseConfigured = () => Boolean(supabaseUrl && supabaseAnonKey)

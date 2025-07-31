@@ -14,12 +14,12 @@ Create a `.env` file in the root directory with the following variables:
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_SUPABASE_EDGE_FUNCTION_NAME=data_ingress
+VITE_SUPABASE_EDGE_FUNCTION_NAME=data-ingress
 ```
 
 ## Edge Function
 
-The application will call the `data_ingress` edge function that:
+The application will call the `data-ingress` edge function that:
 
 1. Accepts an array of profile objects
 2. Validates and processes the data

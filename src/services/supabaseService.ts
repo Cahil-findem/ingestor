@@ -124,7 +124,7 @@ export const testDatabaseConnection = async (): Promise<boolean> => {
   }
 }
 
-export const testEdgeFunction = async (): Promise<{
+export const diagnosticTest = async (): Promise<{
   success: boolean
   message: string
   details?: any
@@ -136,40 +136,99 @@ export const testEdgeFunction = async (): Promise<{
     }
   }
 
+  const diagnostics: any = {
+    supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+    functionName: edgeFunctionName,
+    timestamp: new Date().toISOString(),
+    tests: {}
+  }
+
+  // Test 1: Try the configured function name
   try {
-    console.log('Testing edge function connectivity...')
+    console.log('Testing configured edge function:', edgeFunctionName)
     
     const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
-      body: {
-        test: true,
-        profiles: [],
-        timestamp: new Date().toISOString(),
-      },
+      body: { test: true, profiles: [] },
     })
 
-    if (error) {
-      return {
-        success: false,
-        message: `Edge function '${edgeFunctionName}' failed: ${error.message || error.code}`,
-        details: {
-          error: error.message,
-          code: error.code,
-          details: error.details,
-          functionName: edgeFunctionName
-        }
-      }
+    diagnostics.tests.configuredFunction = {
+      name: edgeFunctionName,
+      error: error?.message || null,
+      errorCode: error?.code || null,
+      success: !error,
+      response: data
     }
 
-    return {
-      success: true,
-      message: `Edge function '${edgeFunctionName}' is accessible`,
-      details: data
+    if (!error) {
+      return {
+        success: true,
+        message: `Edge function '${edgeFunctionName}' is working`,
+        details: diagnostics
+      }
     }
-  } catch (error) {
-    return {
-      success: false,
-      message: `Edge function test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      details: error
+  } catch (err) {
+    diagnostics.tests.configuredFunction = {
+      name: edgeFunctionName,
+      error: err instanceof Error ? err.message : 'Unknown error',
+      success: false
     }
   }
+
+  // Test 2: Try common function names
+  const commonNames = ['ingest', 'upload', 'process', 'import', 'data-ingest', 'profiles']
+  
+  for (const testName of commonNames) {
+    try {
+      const { error } = await supabase.functions.invoke(testName, {
+        body: { test: true },
+      })
+      
+      diagnostics.tests[`common_${testName}`] = {
+        name: testName,
+        error: error?.message || null,
+        exists: error?.message !== 'Failed to send a request to the Edge Function'
+      }
+    } catch (err) {
+      diagnostics.tests[`common_${testName}`] = {
+        name: testName,
+        error: err instanceof Error ? err.message : 'Unknown error',
+        exists: false
+      }
+    }
+  }
+
+  // Test 3: Try to get function list (if possible)
+  try {
+    // This might not work but worth trying
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/`, {
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    diagnostics.tests.listFunctions = {
+      status: response.status,
+      statusText: response.statusText,
+      accessible: response.ok
+    }
+  } catch (err) {
+    diagnostics.tests.listFunctions = {
+      error: err instanceof Error ? err.message : 'Unknown error'
+    }
+  }
+
+  return {
+    success: false,
+    message: `Edge function '${edgeFunctionName}' not found or not accessible. Check diagnostics for details.`,
+    details: diagnostics
+  }
+}
+
+export const testEdgeFunction = async (): Promise<{
+  success: boolean
+  message: string
+  details?: any
+}> => {
+  return await diagnosticTest()
 }
