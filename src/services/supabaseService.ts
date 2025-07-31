@@ -175,7 +175,7 @@ export const diagnosticTest = async (): Promise<{
   }
 
   // Test 2: Try common function names
-  const commonNames = ['ingest', 'upload', 'process', 'import', 'data-ingest', 'profiles']
+  const commonNames = ['ingest', 'upload', 'process', 'import', 'data-ingest', 'data-ingress', 'profiles']
   
   for (const testName of commonNames) {
     try {
