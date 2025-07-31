@@ -197,12 +197,59 @@ export const diagnosticTest = async (): Promise<{
     }
   }
 
-  // Test 3: Try to get function list (if possible)
+  // Test 3: Direct fetch test using Supabase's exact format
   try {
-    // This might not work but worth trying
+    console.log('Testing direct fetch to data-ingress...')
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/data-ingress`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        test: true,
+        profiles: [],
+        timestamp: new Date().toISOString()
+      })
+    })
+    
+    const responseText = await response.text()
+    let responseData
+    try {
+      responseData = JSON.parse(responseText)
+    } catch {
+      responseData = responseText
+    }
+    
+    diagnostics.tests.directFetch = {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      responseBody: responseData,
+      headers: Object.fromEntries(response.headers.entries())
+    }
+    
+    if (response.ok) {
+      return {
+        success: true,
+        message: 'Direct fetch to data-ingress succeeded!',
+        details: diagnostics
+      }
+    }
+    
+  } catch (err) {
+    diagnostics.tests.directFetch = {
+      error: err instanceof Error ? err.message : 'Unknown error'
+    }
+  }
+
+  // Test 4: Try to get function list (if possible)
+  try {
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/`, {
       headers: {
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
         'Content-Type': 'application/json'
       }
     })
