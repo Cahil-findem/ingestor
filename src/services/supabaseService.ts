@@ -247,9 +247,9 @@ export const diagnosticTest = async (): Promise<{
     }
   }
 
-  // Test 4: Try to get function list (if possible)
+  // Test 4: Check if anon key works for basic API access
   try {
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, {
       headers: {
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
@@ -257,13 +257,37 @@ export const diagnosticTest = async (): Promise<{
       }
     })
     
-    diagnostics.tests.listFunctions = {
+    diagnostics.tests.basicApiAccess = {
       status: response.status,
       statusText: response.statusText,
-      accessible: response.ok
+      accessible: response.ok,
+      anonKeyFormat: import.meta.env.VITE_SUPABASE_ANON_KEY?.substring(0, 10) + '...'
     }
   } catch (err) {
-    diagnostics.tests.listFunctions = {
+    diagnostics.tests.basicApiAccess = {
+      error: err instanceof Error ? err.message : 'Unknown error'
+    }
+  }
+
+  // Test 5: Check edge functions permissions specifically
+  try {
+    // Try to get function info with different approach
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/data-ingress`, {
+      method: 'OPTIONS',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      }
+    })
+    
+    diagnostics.tests.edgeFunctionOptions = {
+      status: response.status,
+      statusText: response.statusText,
+      accessible: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
+    }
+  } catch (err) {
+    diagnostics.tests.edgeFunctionOptions = {
       error: err instanceof Error ? err.message : 'Unknown error'
     }
   }
