@@ -21,7 +21,7 @@ export const ProcessingResult: React.FC<ProcessingResultProps> = ({
   return (
     <div className={`result ${type}`}>
       <h3>{title}</h3>
-      <div>{message}</div>
+      <div className="result-message">{message}</div>
       
       {/* Database Upload Status */}
       {data?.databaseResult && (

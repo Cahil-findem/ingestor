@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useEffect } from 'react'
 import { FileUpload } from './components/FileUpload'
 import { ProcessingResult } from './components/ProcessingResult'
 import { LoadingSpinner } from './components/LoadingSpinner'
@@ -15,6 +16,8 @@ function App() {
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isProcessButtonEnabled, setIsProcessButtonEnabled] = useState(false)
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [showVectorizationButton, setShowVectorizationButton] = useState(false)
   const [result, setResult] = useState<{
     type: ResultType
     title: string
@@ -28,6 +31,19 @@ function App() {
     data: null,
     isVisible: false,
   })
+
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (!target.closest('.settings-menu')) {
+        setShowSettingsMenu(false)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
 
   const handleFileSelect = useCallback(async (file: File) => {
     setIsProcessing(true)
@@ -53,6 +69,7 @@ function App() {
     })
     setIsProcessButtonEnabled(true)
     setIsProcessing(false)
+    setShowVectorizationButton(false)
   }, [result])
 
   const handleProcessFile = useCallback(async () => {
@@ -104,6 +121,13 @@ function App() {
         data: processedData,
         isVisible: true,
       })
+
+      // Show vectorization button after 3 seconds if successful
+      if (resultType === 'success') {
+        setTimeout(() => {
+          setShowVectorizationButton(true)
+        }, 3000)
+      }
     } catch (error) {
       setResult({
         type: 'error',
@@ -118,6 +142,7 @@ function App() {
   }, [selectedFile, result])
 
   const handleTestEdgeFunction = useCallback(async () => {
+    setShowSettingsMenu(false)
     setIsProcessing(true)
     const testResult = await testEdgeFunction()
     setResult({
@@ -131,6 +156,7 @@ function App() {
   }, [])
 
   const handleTriggerQueueProcessor = useCallback(async () => {
+    setShowSettingsMenu(false)
     setIsProcessing(true)
     const queueResult = await triggerQueueProcessor()
     setResult({
@@ -143,21 +169,47 @@ function App() {
     setIsProcessing(false)
   }, [])
 
+  const toggleSettingsMenu = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowSettingsMenu(!showSettingsMenu)
+  }, [showSettingsMenu])
+
   return (
     <div className="container">
       <div className="header">
-        <div>
-          <h1>JSON Processor</h1>
+        <div className="header-content">
+          <h1>Profile JSON Processor</h1>
           <p className="subtitle">Upload a JSON array with up to 10 profile objects to the database</p>
         </div>
-        <a 
-          href="https://smb-search.vercel.app/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="search-link"
-        >
-          Go to Search →
-        </a>
+        <div className="header-actions">
+          <div className="settings-menu">
+            <button 
+              className="settings-button"
+              onClick={toggleSettingsMenu}
+              disabled={isProcessing}
+            >
+              ⚙️
+            </button>
+            {showSettingsMenu && (
+              <div className="settings-dropdown">
+                <button onClick={handleTestEdgeFunction} disabled={isProcessing}>
+                  🔧 Test Edge Function
+                </button>
+                <button onClick={handleTriggerQueueProcessor} disabled={isProcessing}>
+                  🚀 Force Vectorization
+                </button>
+              </div>
+            )}
+          </div>
+          <a 
+            href="https://smb-search.vercel.app/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="search-link"
+          >
+            Go to Search →
+          </a>
+        </div>
       </div>
 
       <FileUpload
@@ -166,33 +218,21 @@ function App() {
       />
 
       <button
-        className="process-btn"
+        className="main-cta"
         onClick={handleProcessFile}
         disabled={!isProcessButtonEnabled}
       >
-        Process File
+        Ingest Profiles
       </button>
 
-      {isSupabaseConfigured() && (
-        <>
-          <button
-            className="process-btn"
-            onClick={handleTestEdgeFunction}
-            disabled={isProcessing}
-            style={{ marginTop: '10px', background: '#6c757d' }}
-          >
-            Test Edge Function
-          </button>
-          
-          <button
-            className="process-btn"
-            onClick={handleTriggerQueueProcessor}
-            disabled={isProcessing}
-            style={{ marginTop: '10px', background: '#28a745' }}
-          >
-            🚀 Force Vectorization
-          </button>
-        </>
+      {showVectorizationButton && (
+        <button
+          className={`vectorization-cta ${showVectorizationButton ? 'show' : ''}`}
+          onClick={handleTriggerQueueProcessor}
+          disabled={isProcessing}
+        >
+          🚀 Start Vectorization
+        </button>
       )}
 
       <LoadingSpinner isVisible={isProcessing} />
