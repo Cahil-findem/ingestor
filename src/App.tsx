@@ -7,7 +7,6 @@ import { formatFileSize, simulateProcessing } from './utils/fileUtils'
 import { processJsonData } from './utils/jsonProcessor'
 import { validateJsonFile } from './utils/jsonValidator'
 import { uploadProfilesToDatabase, testEdgeFunction, triggerQueueProcessor } from './services/supabaseService'
-import { isSupabaseConfigured } from './lib/supabase'
 import { FileInfo, ProcessedData, ResultType } from './types'
 import './App.css'
 
