@@ -173,27 +173,23 @@ function App() {
         Process File
       </button>
 
-      {isSupabaseConfigured() && (
-        <>
-          <button
-            className="process-btn"
-            onClick={handleTestEdgeFunction}
-            disabled={isProcessing}
-            style={{ marginTop: '10px', background: '#6c757d' }}
-          >
-            Test Edge Function
-          </button>
-          
-          <button
-            className="process-btn"
-            onClick={handleTriggerQueueProcessor}
-            disabled={isProcessing}
-            style={{ marginTop: '10px', background: '#28a745' }}
-          >
-            🚀 Force Vectorization
-          </button>
-        </>
-      )}
+      <button
+        className="process-btn"
+        onClick={handleTestEdgeFunction}
+        disabled={isProcessing}
+        style={{ marginTop: '10px', background: '#6c757d' }}
+      >
+        Test Edge Function
+      </button>
+      
+      <button
+        className="process-btn"
+        onClick={handleTriggerQueueProcessor}
+        disabled={isProcessing}
+        style={{ marginTop: '10px', background: '#28a745' }}
+      >
+        🚀 Force Vectorization
+      </button>
 
       <LoadingSpinner isVisible={isProcessing} />
 
