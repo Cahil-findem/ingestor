@@ -10,7 +10,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ isVisible }) => 
   return (
     <div className="loading">
       <div className="spinner"></div>
-      <div>Processing and uploading to database...</div>
+      <div className="loading-text">Processing and uploading to database...</div>
     </div>
   )
 }
