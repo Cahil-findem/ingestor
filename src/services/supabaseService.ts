@@ -306,3 +306,48 @@ export const testEdgeFunction = async (): Promise<{
 }> => {
   return await diagnosticTest()
 }
+
+export const triggerQueueProcessor = async (): Promise<{
+  success: boolean
+  message: string
+  details?: any
+}> => {
+  if (!isSupabaseConfigured() || !supabase) {
+    return {
+      success: false,
+      message: 'Supabase not configured. Cannot trigger queue processor.',
+    }
+  }
+
+  try {
+    console.log('Triggering queue processor...')
+    
+    const { data, error } = await supabase.functions.invoke('queue-processor', {
+      body: {},
+    })
+
+    if (error) {
+      console.error('Queue processor error:', error)
+      return {
+        success: false,
+        message: `Failed to trigger queue processor: ${error.message || 'Unknown error'}`,
+        details: error,
+      }
+    }
+
+    console.log('Queue processor response:', data)
+
+    return {
+      success: true,
+      message: data?.message || 'Queue processor triggered successfully',
+      details: data,
+    }
+  } catch (error) {
+    console.error('Queue processor trigger error:', error)
+    return {
+      success: false,
+      message: 'Failed to trigger queue processor',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}

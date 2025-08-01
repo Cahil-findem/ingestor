@@ -5,7 +5,7 @@ import { LoadingSpinner } from './components/LoadingSpinner'
 import { formatFileSize, simulateProcessing } from './utils/fileUtils'
 import { processJsonData } from './utils/jsonProcessor'
 import { validateJsonFile } from './utils/jsonValidator'
-import { uploadProfilesToDatabase, testEdgeFunction } from './services/supabaseService'
+import { uploadProfilesToDatabase, testEdgeFunction, triggerQueueProcessor } from './services/supabaseService'
 import { isSupabaseConfigured } from './lib/supabase'
 import { FileInfo, ProcessedData, ResultType } from './types'
 import './App.css'
@@ -130,6 +130,19 @@ function App() {
     setIsProcessing(false)
   }, [])
 
+  const handleTriggerQueueProcessor = useCallback(async () => {
+    setIsProcessing(true)
+    const queueResult = await triggerQueueProcessor()
+    setResult({
+      type: queueResult.success ? 'success' : 'error',
+      title: queueResult.success ? 'Queue Processor Triggered' : 'Queue Processor Failed',
+      message: queueResult.message,
+      data: queueResult.details ? { summary: JSON.stringify(queueResult.details, null, 2) } as any : undefined,
+      isVisible: true,
+    })
+    setIsProcessing(false)
+  }, [])
+
   return (
     <div className="container">
       <div className="header">
@@ -161,14 +174,25 @@ function App() {
       </button>
 
       {isSupabaseConfigured() && (
-        <button
-          className="process-btn"
-          onClick={handleTestEdgeFunction}
-          disabled={isProcessing}
-          style={{ marginTop: '10px', background: '#6c757d' }}
-        >
-          Test Edge Function
-        </button>
+        <>
+          <button
+            className="process-btn"
+            onClick={handleTestEdgeFunction}
+            disabled={isProcessing}
+            style={{ marginTop: '10px', background: '#6c757d' }}
+          >
+            Test Edge Function
+          </button>
+          
+          <button
+            className="process-btn"
+            onClick={handleTriggerQueueProcessor}
+            disabled={isProcessing}
+            style={{ marginTop: '10px', background: '#28a745' }}
+          >
+            🚀 Force Vectorization
+          </button>
+        </>
       )}
 
       <LoadingSpinner isVisible={isProcessing} />
