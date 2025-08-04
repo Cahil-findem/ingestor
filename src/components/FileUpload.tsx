@@ -4,11 +4,15 @@ import { FileInfo } from '../types'
 interface FileUploadProps {
   onFileSelect: (file: File) => void
   fileInfo: FileInfo | null
+  label: string
+  onLabelChange: (label: string) => void
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
   onFileSelect,
   fileInfo,
+  label,
+  onLabelChange,
 }) => {
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -46,8 +50,30 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     document.getElementById('fileInput')?.click()
   }, [])
 
+  const handleLabelChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onLabelChange(e.target.value)
+  }, [onLabelChange])
+
   return (
     <div>
+      <div className="label-section">
+        <label htmlFor="profileLabel" className="label-text">
+          Profile Label (Optional)
+        </label>
+        <input
+          type="text"
+          id="profileLabel"
+          className="label-input"
+          placeholder="e.g., Tech Candidates Q1 2024, Marketing Team, etc."
+          value={label}
+          onChange={handleLabelChange}
+          maxLength={100}
+        />
+        <div className="label-hint">
+          Add a descriptive label to organize your profile batches
+        </div>
+      </div>
+
       <div
         className="upload-area"
         onClick={handleClick}

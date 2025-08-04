@@ -22,7 +22,8 @@ export interface EdgeFunctionResponse {
 }
 
 export const uploadProfilesToDatabase = async (
-  profiles: ProfileData[]
+  profiles: ProfileData[],
+  label?: string
 ): Promise<DatabaseUploadResult> => {
   // Check if Supabase is configured
   if (!isSupabaseConfigured() || !supabase) {
@@ -37,14 +38,20 @@ export const uploadProfilesToDatabase = async (
     console.log('Attempting to call edge function:', {
       functionName: edgeFunctionName,
       profileCount: profiles.length,
+      label: label || 'none',
       supabaseUrl: import.meta.env.VITE_SUPABASE_URL?.substring(0, 30) + '...',
       timestamp: new Date().toISOString()
     })
 
     // Call the Supabase edge function to process and insert profiles
-    // Note: The edge function expects a direct array of profiles, not wrapped in an object
+    // Send both profiles and label as an object
+    const requestBody = {
+      profiles: profiles,
+      label: label || null
+    }
+
     const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
-      body: profiles, // Send profiles directly as array
+      body: requestBody,
     })
 
     if (error) {

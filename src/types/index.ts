@@ -4,12 +4,22 @@ export interface ProcessedData {
   dataTypes: Record<string, string>
   processedAt: string
   summary: string
+  label?: string
   databaseResult?: DatabaseUploadResult
 }
 
 export interface FileInfo {
   name: string
   size: string
+}
+
+export interface UploadRequest {
+  profiles: ProfileData[]
+  label?: string
+}
+
+export interface ProfileData {
+  [key: string]: any
 }
 
 export interface DatabaseUploadResult {

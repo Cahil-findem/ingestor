@@ -45,6 +45,14 @@ export const ProcessingResult: React.FC<ProcessingResultProps> = ({
         </div>
       )}
       
+      {/* Label Display */}
+      {data?.label && (
+        <div className="label-display">
+          <h4>Profile Label:</h4>
+          <span className="label-badge">{data.label}</span>
+        </div>
+      )}
+      
       {/* Processing Details */}
       {data && (
         <details className="processing-details">
@@ -55,7 +63,8 @@ export const ProcessingResult: React.FC<ProcessingResultProps> = ({
               totalProperties: data.totalProperties,
               dataTypes: data.dataTypes,
               processedAt: data.processedAt,
-              summary: data.summary
+              summary: data.summary,
+              label: data.label || null
             }, null, 2)}</pre>
           </div>
         </details>

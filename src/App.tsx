@@ -13,6 +13,7 @@ import './App.css'
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
+  const [label, setLabel] = useState<string>('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isProcessButtonEnabled, setIsProcessButtonEnabled] = useState(false)
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
@@ -91,9 +92,10 @@ function App() {
 
       // Process the JSON data locally
       const processedData = processJsonData(jsonData)
+      processedData.label = label.trim() || undefined
 
       // Upload to database via edge function
-      const databaseResult = await uploadProfilesToDatabase(jsonData)
+      const databaseResult = await uploadProfilesToDatabase(jsonData, label.trim() || undefined)
       processedData.databaseResult = databaseResult
 
       // Determine result type based on database operation
@@ -214,6 +216,8 @@ function App() {
       <FileUpload
         onFileSelect={handleFileSelect}
         fileInfo={fileInfo}
+        label={label}
+        onLabelChange={setLabel}
       />
 
       <button
